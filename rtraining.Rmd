@@ -1,0 +1,853 @@
+---
+title: "rtraining"
+author: "Soren Pedersen"
+date: "01/12/2021"
+output: html_document
+tutor: "Sophie Schmidt"
+github: https://github.com/SCSchmidt/lehre/blob/R-Kurs-Koblenz/docs/archaeology/english/01_eng_rrtools_arch.md 
+---
+
+###Intro###
+
+This document is based on the online training in R and RStudio by Sophie Schmidt and Johanna Sigl (SPP) 29.11.21 - 3.12.21
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###DAY ONE###
+
+#Make some simple dataframes and variables
+
+This is just to demonstrate basic functions in R
+
+```{r, eval=FALSE, echo=TRUE}
+#Day one
+
+#make some varialbles
+
+v <- c(9, 8, 7, 5)
+
+dating <- c("iron age", "bronze age", "iron age", "neolithic")
+
+types <- c("bowl", "vase", "bowl", "vase")
+
+#make a data frame
+
+df <- data.frame(dating, types, v)
+
+#change the data class (character/factor)
+
+df$dating <- as.character(df$dating)
+
+df$dating <- as.factor(df$dating)
+
+#if you want just one value, use the  square brackets (first row number and the column numer)
+
+df[1, 2]
+
+df[2,2]
+
+#if you just need one value
+
+df[2,]
+
+#mean
+
+mean(df$v)
+
+#create a value
+
+mean_v <- mean(df$v)
+```
+
+#Download packages and make some folders/structure
+
+This is to set the folder structure and download the right packages
+
+```{r, echo=TRUE}
+#install devtools
+
+#install.packages("devtools")
+library(devtools)
+
+#NOTE: I did install ALL updates
+
+#devtools::install_github("benmarwick/rrtools")
+
+#Create a new .Rproj -> very important not to have spaces or numbers in the folder name
+
+#rrtools::use_compendium("C:/Users/Pedersen/Documents/R/RSeminar")
+
+
+#Example: rrtools::use_compendium("C:/your/path/name/here/YourNewRProjectNameHere")
+```
+
+#Set up folder structure
+
+This is to create folder "analysis" with sub-folder structure -> VERY USEFUL
+
+The structure is made by Ben Marwick and is designated for archaeological writing and structure
+
+```{r, echo=TRUE}
+#Package that includes folder structure
+library(rrtools)
+
+#create folder
+#use_analysis()
+
+#Do this below (pops-up when you execute use_analysis())
+
+#Next, you need to:  ↓ ↓ ↓ ↓ 
+#* Write your article/report/thesis, start at the paper.Rmd file
+#* Add the citation style library file (csl) to replace the default provided here, see https://github.com/citation-style-language/
+#* Add bibliographic details of cited items to the 'references.bib' file
+#* For adding captions & cross-referencing in an Rmd, see https://bookdown.org/yihui/bookdown/
+#* For adding citations & reference lists in an Rmd, see http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html
+```
+
+###DAY TWO###
+
+#Data manegement
+
+Now to load data, we can use the function "readcsv2"
+
+Included the "Snodgrass.xlsx" and "BAcups.csv" data sheets in my "analysis -> data -> raw_data" folder (data sent by Sophia)
+
+First, I read in the BAcups.csv file and clean the data
+
+```{r, eval=FALSE, echo=TRUE}
+#eval = false -> will not load the code chunk again
+
+##Read the .csv dataset
+
+BAcups <- read.csv2("C:/Users/Pedersen/Documents/R/RSeminar/analysis/data/raw_data/BAcups.csv", sep = ",", row.names = "X")
+
+#Seperate the data with the sep = "," command
+#Row names are set to "X" -> deletes the first column
+
+#Change the RD column to a numeric value
+BAcups$RD <- as.numeric(BAcups$RD)
+
+#Do it with the rest of the columns
+
+BAcups$SD <- as.numeric(BAcups$SD)
+
+BAcups$H <- as.numeric(BAcups$H)
+
+BAcups$ND <- as.numeric(BAcups$ND)
+
+BAcups$NH <- as.numeric(BAcups$NH)
+
+#Save the data as an .RData file in "derived_data"
+
+save(BAcups, file = "C:/Users/Pedersen/Documents/R/RSeminar/analysis/data/derived_data/BAcups.RData")
+```
+
+#Load the data
+
+I had to change all my data to numeric, and instead of change all the values again (the values I changed above) I just load the previously saved dataset
+
+```{r}
+load("C:/Users/Pedersen/Documents/R/RSeminar/analysis/data/derived_data/BAcups.RData")
+```
+
+#Read Excel sheets
+
+Second, I read the .xlsx files and the Snodgrass.xlsx files
+
+install and load the needed package
+
+```{r, echo=TRUE}
+#Install packages for Excel files
+#install.packages("openxlsx")
+library(openxlsx)
+```
+
+#Read the .xlsx sheet
+
+Reads in the Snodgrass.xlsx data
+
+```{r, echo=TRUE}
+##Read the .xlsx data sheet
+#NOTE: If I need just one data sheet I use "sheet = 1"
+#Snodgrass <- read.xlsx("C:/Users/Pedersen/Documents/R/RSeminar/analysis/data/raw_data/Snodgrass.xlsx")
+```
+
+#Install the "archdata" dataset
+
+This is a package for archaeological data which also includes the BAcups and Snodgrass datasets
+
+```{r, echo=TRUE}
+#install and load packages
+
+#install.packages("archdata")
+library(archdata)
+
+#If I want just one dataset of the "archdata" below
+
+data("Snodgrass")
+
+data("TRBPottery")
+``` 
+
+###Analysis of the data
+
+#install and load packages
+
+install these packages for the analysis
+
+```{r, echo=TRUE}
+#Install packages
+
+#install.packages("dplyr")
+library(dplyr)
+
+#install.packages("magrittr")
+library(magrittr)
+```
+
+#Data Analysis - take a look at the data
+
+Select columns and other data
+
+```{r, echo=TRUE}
+Snodgrass %>% 
+  select(Length,
+         Width)
+```
+
+change data to numeric
+
+```{r, echo=TRUE}
+Snodgrass %>%
+  select_if(is.numeric)
+```
+
+Filter the data
+
+```{r, echo=TRUE}
+Snodgrass %>%
+  filter(Segment == "2")
+```
+
+Select special files
+
+```{r, echo=TRUE}
+Snodgrass %>%
+  filter(Segment == "2") %>%
+  select(Inside, Segment, Area)
+```
+
+Make a mean of the Area
+
+```{r, echo=TRUE}
+Snodgrass %>%
+  filter(Segment == "2") %>%
+  select(Inside, Segment, Area) %>%
+  use_series(Area) %>%
+  mean()
+```
+
+###Data analysis - data visualizing
+
+install these packages for visualizing data
+
+```{r, echo=TRUE}
+#install.packages("ggplot2")
+library(ggplot2)
+```
+
+Plot the Snodgrass data (Barplot)
+
+```{r, echo=TRUE}
+ggplot() +
+  geom_bar(data = Snodgrass, aes(x = Inside, 
+                                 fill = Segment))
+
+#"x = inside" defines the x bar
+#"fill = Segment" is for the fill colors
+```
+
+geom_point plot and define further parameters
+
+```{r, echo=TRUE}
+ggplot(Snodgrass) +
+  geom_point(aes(x = East,
+                 y = South, #Define east/south
+                 col = Inside, #Wich are inside or outsie
+                 size = Area)) #Size it to the area
+```
+
+Add another layer, change inside/outside and color the data
+
+```{r, echo=TRUE}
+ggplot(Snodgrass) +
+  geom_point(aes(x = East,
+                 y = South, #Define east/south
+                 col = Inside, #Wich are inside or outside
+                 size = Area))+
+  scale_color_manual(values = c("red", "blue"),
+    name = "Inside or Outside the wall")
+```
+
+#Histograms
+
+```{r, echo=TRUE}
+ggplot() +
+  geom_histogram(data = Snodgrass, aes(x = Width,
+                                  fill = Inside))
+```
+
+Bell-curve on density plot
+
+```{r, echo=TRUE}
+ggplot() +
+  geom_density(data = Snodgrass, aes(x = Width,
+                                  fill = Inside), alpha = 0.5) 
+
+#"alpha = 0.5" say that the plot has to be transparent
+```
+
+###DAY THREE###
+
+(Mail from Sophie)
+
+please take a look at this theoretical introduction to statistics:
+
+https://seeing-theory.brown.edu/basic-probability/index.html
+
+Everything up to "Frequentist analysis", subchapter "confidence interval" will be relevant. Then I hope we can do some first tests tomorrow.
+
+#Make more ggplots
+
+Scatterplot of pottery. We will take a look at the shoulder diameter (SD) and height (H) 
+
+```{r, echo=TRUE}
+#first create a variable
+v <- ggplot() +
+  geom_point(data = BAcups, aes(x = SD, y = H,
+                                shape = Phase,
+                                color = Phase))
+
+#then you can just type "v+" to change the parameters
+v+
+  labs(x = "shoulder diameter",
+       y = "height",
+       title = "proto-and subapenine BA cups")+
+  #to create a theme
+  theme_bw()
+```
+
+#To save
+
+Was not able to save
+
+```{r, echo=TRUE}
+#ggsave("../figures/scatterplot.jpg", dpi = 300)
+```
+
+#Density plots
+
+```{r, echo=TRUE}
+#install and load
+
+#install.packages("tidyr")
+library(tidyr)
+```
+
+Compare the rim diameters for the two areas
+
+```{r, echo=TRUE}
+BAcups %>% 
+  gather(key = "diameter", #new column for "old column heads"
+         value = "value", #new column for the values
+         "RD", "ND", "SD",) %>% #Choose the columns that have to be gathered
+  ggplot()+
+  geom_density(aes(x = value, col = diameter))+
+  facet_grid(Phase ~ diameter) #define the phase, you can also use "." for unspecified
+```
+
+#Boxplot
+
+Compare the height of vessels with a boxplot
+
+```{r, echo=TRUE}
+ggplot(BAcups)+ #define the data in the brackets
+  geom_boxplot(aes(x = Phase, y = H))+ #define the type of plot i.e. boxplot
+  #Define the headers and axis names with labs()
+  labs(x = "Phases",
+       y = "Height",
+       title = "Comparing height of vessels")+
+  #Define the length of the axis with geom_text()
+  geom_text(aes(x = 2.5, y = 3,
+                label = paste("n =", nrow(BAcups))))+ #Define label to be number of rows with nrow() from the dataset BAcups
+  theme_bw()
+```
+
+#Subset the dataset
+
+```{r, echo=TRUE}
+#First part if from above
+
+ggplot(BAcups)+ #define the data in the brackets
+  geom_boxplot(aes(x = Phase, y = H))+ #define the type of plot i.e. boxplot
+  #Define the headers and axis names with labs()
+  labs(x = "Phases",
+       y = "Height",
+       title = "Comparing height of vessels")+
+  #Define the length of the axis with geom_text()
+  geom_text(aes(x = 2.5, y = 3,
+                label = paste("n P =", nrow(BAcups))))+ #n value of data sheet
+  scale_x_discrete(labels = c(paste("Protoapennine \n n = ", nrow(BAcups[BAcups$Phase == "Protoapennine",])), paste("Subapennine \n n=",nrow(BAcups[BAcups$Phase == "Subapennine",] ))))+
+  theme_bw()
+```
+#THIS BELOW DID NOT WORK missing brackets
+
+"yintersept" is skewed
+
+```{r, eval=FALSE, echo=TRUE}
+ggplot(BAcups)+ #define the data in the brackets
+  geom_boxplot(aes(x = Phase, y = H))+ #define the type of plot i.e. boxplot
+  #Define the headers and axis names with labs()
+  labs(x = "Phases",
+       y = "Height",
+       title = "Comparing height of vessels")+
+  #Define the length of the axis with geom_text()
+  geom_text(aes(x = 2.5, y = 3,
+                label = paste("n P =", nrow(BAcups))))+ #n value of data sheet
+  scale_x_discrete(labels = c(paste("Protoapennine \n n = ", nrow(BAcups[BAcups$Phase == "Protoapennine",])), paste("Subapennine \n n=",nrow(BAcups[BAcups$Phase == "Subapennine",] ))))+
+  geom_hline(aes(yintersept = mean(BAcups$H)),
+             linetype = "dashed")+
+  theme_bw()
+```
+
+##Probaility
+
+lets do a binomial test on a excavated graveyard
+
+Graves = 200
+males = 125
+females = 75
+Theoretical distribution = 50/50 distribution
+
+Q: why are there more men than woman? Is this a reflection of the true value of men and women, or is it skewed?
+
+```{r, echo=TRUE}
+binom.test(125, 200, alternative = "two.sided")
+```
+To accept this hypothesis we have to be above 0.5. P-value is very low and below 0.5, so we reject the hypothesis -> this is not a normal distribution of men and women in the population
+
+```{r, echo=TRUE}
+binom.test(125, 200, 0.5, alternative = "greater")
+```
+
+###We go to the arch data
+
+load the dataset
+```{r, echo=TRUE}
+data("EWBurials")
+
+#how large is my dataset
+
+nrow(EWBurials)
+```
+
+#How many men are in my dataset
+
+```{r, echo=TRUE}
+nrow(EWBurials[EWBurials$Sex == "Male", ])
+```
+#Binom test
+
+Binom test is the "x" number of successes after "x" number of trials with a 50/50 distribution. 
+
+Then I need to decide the alternative hypothesis, i.e. is it "greater", "less" or "two.sided".
+
+```{r, echo=TRUE}
+binom.test(nrow(EWBurials[EWBurials$Sex == "Male", ]),
+           nrow(EWBurials),
+           0.5,
+           alternative = "two.sided")
+```
+P-value is 1 which is very high!
+
+###DAY FOUR###
+
+(Mail from Sophia)
+
+For those who couldn't be at the seminar the whole time or for those who want to recap what we did, here are two scripts for you. The first one recaps the ggplot stuff we did:
+
+https://github.com/SCSchmidt/lehre/blob/R-Kurs-Koblenz/docs/archaeology/english/03_eng_ggplot_arch.md
+
+the second one deals with the binomial test:
+
+https://github.com/SCSchmidt/lehre/blob/R-Kurs-Koblenz/docs/archaeology/english/04_eng_1st_tests_arch.md
+
+Good links:
+
+https://benmarwick.github.io/tidyverse-for-archaeology/tidyverse-for-archaeology.html#1
+
+http://www.cookbook-r.com/
+
+https://frank-siegmund.de/veroeffentlichungen/i-monographien/lehrbucharchaeostatistik
+
+IMPORTANT: Before starting your statistical testing, I have to make a decision tree of questions and tests -> look at the screen-dump notes for the course!
+
+#Chi square test
+
+```{r, echo=TRUE}
+nl_graves <- c(10, 50) #Number of graves on slopes and flat areas
+area <- c(0.404, 0.596) #Percentage of area of sloping and flat area graves
+
+#Chi square test (you dont need to make it into a variable)
+
+Chi <- chisq.test(nl_graves, p = area) #p= is to command it in percentage
+
+#Checking the expected values
+
+Chi$statistic
+
+Chi$p.value
+
+Chi$expected #The expected value is important!
+``` 
+I calculated the p-value 'r Chi$p.value' -> in the 'r Chi$p.value' the .Rmd calculates the result again by itself even if there are new calculations. This is a better way of presenting results than to just type the result
+
+#Correlation test
+
+Are the grave good dependant on the sex or age?
+
+```{r, echo=TRUE}
+#From the library(archdata) dataset EWBurials
+
+table(EWBurials$Sex, EWBurials$Goods)
+
+#Make a Chi-square test to see of there are a similarity 
+chisq.test(table(EWBurials$Sex, EWBurials$Goods))
+
+Chi2 <- chisq.test(table(EWBurials$Sex, EWBurials$Goods))
+
+Chi2$expected #The expected value is important!
+```
+#The H0 and H1 conclusion in general (Based on above)
+
+--> H0: The differences I see are random/"by chance"
+--> H1: There is statistically significant difference
+
+P-value is that chance of me making a mistake if I accept H1 
+
+p- value = ">/< of 0.1, 0.05, 0.01"
+
+"If H1 is true I reject H0 and vice versa"
+
+--> Conclusion: No significant co-occurence (correlation) between the sex and the grave goods / abcense or presence of the goods
+
+#From Sophie on conclusion (Based on above)
+
+p is my chance that I make a mistake if I accept H1.
+
+H0: The differences I see are random / by chance.
+H1: there is statistically significant difference.
+
+p > / < 0.1 = 10% ; 0.05 = 5% ; 0.01 = 1%
+
+--> no significant difference between female and male graves / no correlation between sex and grave good absence / presence.
+
+#Gravegoods and age?
+
+Testing for correlation between gravegoods and age?
+
+```{r, echo=TRUE}
+
+chi3 <- chisq.test(table(EWBurials$Age, EWBurials$Goods))
+
+chi3$expected #The expected value is important!
+```
+#Check the BAcups dataset for normal distributions
+
+```{r, echo=TRUE}
+#Install for the analysis
+#install.packages("ggpubr")
+library(ggpubr)
+```
+
+See if the RimDiameter is normally distributed
+
+```{r, echo=TRUE}
+ggqqplot(BAcups$RD)
+```
+Conclusion: they are NOT
+
+See if the NeckDiameter is normally distributed
+
+```{r, echo=TRUE}
+ggqqplot(BAcups$ND)
+```
+Compare the sub and protoappenine vessels using dplyr and magritta packages
+
+```{r, echo=TRUE}
+BAcups %>%
+  filter(Phase == "Protoapennine") %>%
+  use_series(RD) %>%
+  ggqqplot()
+```
+
+We can do a Shapiro test to see if the Protoapennine values are normally distributed
+
+```{r, echo=TRUE}
+BAcups %>%
+  filter(Phase == "Protoapennine") %>%
+  use_series(RD) %>%
+  shapiro.test()
+```
+Conclusion: MY data IS normally distributed because p-value is above 0.05
+
+Is the subapennine data normally distributed?
+
+```{r, echo=TRUE}
+BAcups %>%
+  filter(Phase == "Subapennine") %>%
+  use_series(RD) %>%
+  shapiro.test()
+```
+They are not!
+
+#U-test
+
+See the course notes!
+
+We need two different data sets
+```{r, echo=TRUE}
+wilcox.test(BAcups$RD[BAcups$Phase == "Subapennine"],
+            BAcups$RD[BAcups$Phase == "Protoapennine"])
+```
+Conclusion: We DO NOT accept the H0 hypothesis because the p-value is below 0.05
+
+Take a look at the data with a boxplot
+
+```{r, echo=TRUE}
+ggplot()+
+  geom_boxplot(data = BAcups, aes(x = Phase, y = RD))
+```
+
+```{r, echo=TRUE}
+wilcox.test(BAcups$RD[BAcups$Phase == "Subapennine"],
+            BAcups$RD[BAcups$Phase == "Protoapennine"],
+            alternative = "less")
+```
+P-value here is very high, but we have to test the alternative hypothesis 
+
+#KS test
+
+See notes
+
+```{r, echo=TRUE}
+kstest <- ks.test(BAcups$RD[BAcups$Phase == "Subapennine"],
+            BAcups$RD[BAcups$Phase == "Protoapennine"])
+```
+Conclusion: We can accept the H0 because the KS test p-value is higher than 0.05
+
+CONCLUSION: See the notes on comparing the two different tests!
+
+#If you want to cite a package you use
+
+Always cite R and the authors of the packages!!!
+
+```{r, echo=TRUE}
+citation("ggplot2")
+```
+#Parametric tests
+
+#F-test, an analysis of variance
+
+```{r, echo=TRUE}
+#Read in the data set "Fibulae"
+
+data("Fibulae")
+
+#Subset the dataset by the number of coils on the fibulae
+
+Fib_6c <- subset(Fibulae, Fibulae$Coils < 7)
+Fib_7c <- subset(Fibulae, Fibulae$Coils > 6)
+
+#check for normal distribution
+
+shapiro.test(Fib_6c$BT)
+
+shapiro.test(Fib_7c$BT)
+
+#F-Test to compare the two variances 
+
+var.test(Fib_6c$BT,
+         Fib_7c$BT)
+```
+Conclusion: We have to reject the alternative hypothesis since the p-value is above 0.05
+
+#T-test
+
+Very valuable for small data sets
+
+Looks at the mean of the two data sets
+
+```{r, echo=TRUE}
+t.test(Fib_6c$BT,
+         Fib_7c$BT)
+```
+Conclusion: 
+
+###DAY FIVE###
+
+(Mail from Sophie)
+
+I can offer a PDF by Mike Baxter and Hilary Cool on graphics for archaeology in R. Baxter wrote quite a lot about statistics and archaeology, esp about multivariate analyses as well. His stuff can be found online (on academia.edu e.g.).
+
+"The Orton" is the bible for sampling in archaeology. I can recommend it, if you want to start a project from scratch and draw good statistical samples.
+
+For a quick wrap up you can see the code I wrote today (with a few comments) here as well: https://github.com/SCSchmidt/lehre/blob/R-Kurs-Koblenz/docs/archaeology/english/04_eng_2nd_tests_arch.md
+
+##Correlation tests
+
+#Cramer's V
+
+```{r, echo=TRUE}
+#First install
+
+#install.packages("lsr")
+library(lsr)
+
+data("EndScrapers")
+
+#"I want to sum up all the scrapers from one site and are retouched"
+
+end_site_ret <- aggregate(EndScrapers$Freq, #sum of the frequency
+                          by = list(Site = EndScrapers$Site, #Keep the variable site
+                                    Retouched = EndScrapers$Retouched), #Keep variable retouch
+                          FUN = sum) #Use function sum
+
+#You have to use dplyr and tidyr packages
+
+end_sr <- end_site_ret %>%
+  spread(value = "x", #put the value x inside the table
+         key = "Site") #put site as columnheads
+
+head(end_sr) #Take a look at the head of the new table
+
+rownames(end_sr) <- end_sr$Retouched 
+
+end_sr <- end_sr[, 2:3] #Overwrite end_sr with end_sr with columns 2-3
+
+head(end_sr) 
+
+
+chi <- chisq.test(end_sr)
+chi
+```
+Conclusion: The p-value in this case is very very small and R cannot really calculate the value, therefore we get this "2.2e-16" result
+
+
+
+```{r, echo=TRUE}
+#
+
+cramersV(end_sr)
+```
+Conclusion: we have significantly correlation between these
+
+#Kendalls Tau test
+
+```{r, echo=TRUE}
+ha <- c(2, 1, 4, 1.5)
+nkilns <- c(6, 9, 15, 13)
+
+cor.test(ha, nkilns, method = "kendall", alternative = "two.sided")
+```
+##Pearsons and Bravais R cor tests
+
+```{r, echo=TRUE}
+#Fist we see if the data is normally distributed
+
+shapiro.test(Fibulae$BT)
+
+shapiro.test(Fibulae$BH)
+
+#We can also visualize if they are norm.dist
+
+ggqqplot(Fibulae$BT)
+
+ggqqplot(Fibulae$BH)
+```
+Both the datasets are normally distributed because the p-value is higher than 0.05
+
+Plot the correlation
+
+```{r, echo=TRUE}
+ggplot()+
+  geom_point(data = Fibulae, aes(x = BT, y = BH))
+```
+Conclusion: They cluster so they are correlated
+
+
+```{r, echo=TRUE}
+cor.test(Fibulae$BT, Fibulae$BH, method = "pearson", alternative = "two.sided")
+```
+
+```{r, echo=TRUE}
+#We can do the spearmans rho
+
+cor.test(Fibulae$BT, Fibulae$BH, method = "spearman", alternative = "two.sided")
+```
+#Linear regressions
+
+```{r, echo=TRUE}
+
+fit <- lm(data = Fibulae, BH ~ BT)
+
+summary(fit)
+```
+now plot the best-fit line
+
+```{r, echo=TRUE}
+ggplot(data = Fibulae)+
+  geom_point(data = Fibulae, aes(x = BT, y = BH))+
+  geom_smooth(aes(x = BT, y = BH), method = "lm",
+              se = TRUE)
+```
+
+```{r, echo=TRUE}
+#install.packages("ggpmisc")
+library(ggpmisc)
+```
+
+```{r, echo=TRUE}
+ggplot(data = Fibulae)+
+  geom_point(data = Fibulae, aes(x = BT, y = BH))+
+  geom_smooth(aes(x = BT, y = BH), method = "lm",
+              se = TRUE)+
+  stat_poly_eq(aes(x = BT, y = BH, label = paste(..eq.label..,
+                                                 ..adj.rr.label..,
+                                                 sep = "~~~~")),
+               formula = x~y,
+               parse = TRUE,
+               size = 3,
+               label.y.npc = 0.95)
+```
+
+#Test for correlation of residulas and the fitted y values
+
+```{r, echo=TRUE}
+plot(fit, which = 2, col = c("red"))
+```
+
+```{r, echo=TRUE}
+plot(fit, which = 1, col = c("blue"))
+```
+
+
+```{r, echo=TRUE}
+plot(fit, which = 3, col = c("red"))
+```
+
+```{r, echo=TRUE}
+plot(fit, which = 5, col = c("red")) #How much influence have a single point
+```
